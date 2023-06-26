@@ -4,21 +4,37 @@ Set-ExecutionPolicy unrestricted
 
 ls
 
-$secpasswd = ConvertTo-SecureString "ZA33zIF/LKD5T0VFWb0a6yo5AXHSXSUdnqQd7kF09Zc=" -AsPlainText -Force
-$mycreds = New-Object System.Management.Automation.PSCredential ("OLISTERR", $secpasswd)
+
 $appFile =  (Get-Item (".\Olister.app")).FullName
 
-Write-Host $secpasswd
-Write-Host $mycreds
-Write-Host $appFile
+#########################
+# PowerShell example
+#########################
+$ClientID     = "51cb560d-1398-43e8-a7bf-fa7fe3e35102"
+$ClientSecret = "~Xk8Q~Uho6Jz3MmdMbX5rlQWnyRu4IflZ_vsZdol"
+$loginURL     = "https://login.microsoftonline.com"
+$tenantId     = "763b2d72-dcd0-44c9-b236-7f57e4eb7c51"
+$scopes       = "https://api.businesscentral.dynamics.com/.default"
+$environment  = "v17"
+$baseUrl      = "https://api.businesscentral.dynamics.com/v2.0/$environment/api/microsoft/automation/v1.0"
 
-Invoke-WebRequest `
-            -Method Patch `
-            -Uri "https://api.businesscentral.dynamics.com/v2.0/cft19366.onmicrosoft.com/Sandbox/api/microsoft/automation/v1.0/companies(952e3bf1-8067-4dcd-ab58-f5a1fad7b2d3)/extensionUpload(0)/content" `
-            -Credential $mycreds `
-           -ContentType "application/octet-stream" `
-           -Headers @{"If-Match" = "*"} `
-           -InFile $appFile | Out-Null
-
+# $appFile      = "D:\Repos\Local\AL\ALProject254\Default publisher_ALProject254_1.0.0.0.app"
+# Get access token 
+$body = @{grant_type="client_credentials";scope=$scopes;client_id=$ClientID;client_secret=$ClientSecret}
+$oauth = Invoke-RestMethod -Method Post -Uri $("$loginURL/$tenantId/oauth2/v2.0/token") -Body $body
+# Get companies
+$companies = Invoke-RestMethod `
+             -Method Get `
+             -Uri $("$baseurl/companies") `
+             -Headers @{Authorization='Bearer ' + $oauth.access_token}
+$companies.value | Format-Table -AutoSize
+$companyId = $companies.value[0].id
+# Upload and install app
+Invoke-RestMethod `
+-Method Patch `
+-Uri $("$baseurl/companies($companyId)/extensionUpload(0)/content") `
+-Headers @{Authorization='Bearer ' + $oauth.access_token;'If-Match'='*'} `
+-ContentType "application/octet-stream" `
+-InFile $appFile
 
 Start-Sleep -s 10
