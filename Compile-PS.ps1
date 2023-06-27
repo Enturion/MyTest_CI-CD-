@@ -1,6 +1,6 @@
 Set-ExecutionPolicy unrestricted 
 
-#.\ALC\alc.exe /project:. /out:.\Olister.app /packagecachepath:.\AlPackages
+.\ALC\alc.exe /project:. /out:.\Olister.app /packagecachepath:.\AlPackages
 
 ls
 
