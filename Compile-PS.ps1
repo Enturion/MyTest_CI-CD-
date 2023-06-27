@@ -4,9 +4,6 @@ Set-ExecutionPolicy unrestricted
 
 ls
 
-
-$appFile =  (Get-Item (".\Olister.app")).FullName
-
 #########################
 # PowerShell example
 #########################
@@ -42,4 +39,4 @@ Invoke-RestMethod `
 -ContentType "application/octet-stream" `
 -InFile $appFile
 
-#Start-Sleep -s 10
+Start-Sleep -s 10
